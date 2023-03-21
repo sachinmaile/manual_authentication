@@ -45,6 +45,7 @@ module.exports.createSession=async (req,res)=>{
                 return res.redirect('back');
             }
             res.cookie('user_id',user.id);
+            req.flash('success','Logged in successfully');
             return res.redirect('/');
         }
         else{
@@ -58,30 +59,31 @@ module.exports.createSession=async (req,res)=>{
 };
 
 module.exports.profile=async (req,res)=>{
-    if(req.cookies.user_id){
-        await User.findById(req.cookies.user_id)
-        .then((user)=>{
-            if(user){
-                return res.render('user_profile',{
-                    title:"User Profile",
-                    user:user
-                });
-            }
-            else{
-                return res.redirect('/users/signIn');
-            }
+    await User.findById(req.params.id)
+    .then((user)=>{
+        return res.render('user_profile',{
+            title:'User Profile',
+            profile_user:user
+        });
+    });
+};
+
+module.exports.update=function(req,res){
+    if(req.user.id==req.params.id){
+        User.findByIdAndUpdate(req.params.id,req.body)
+        .then(()=>{
+            return res.redirect('back');
         });
     }
     else{
-        return res.redirect('/users/signIn');
+        return res.status(401).send('Unauthorized');
     }
-};
+}
 
-module.exports.destroySession=function(req, res, next) {
-    req.logout(function(err) {
-      if (err) { 
-        return next(err); 
-        }
-      res.redirect('/');
-    });  
+module.exports.destroySession=function(req, res) {
+    req.logout(function(err){
+        if(err){ console.log('Error',err)}
+    });
+    req.flash('success','Logged out successfully');
+    return res.redirect('/'); 
 };

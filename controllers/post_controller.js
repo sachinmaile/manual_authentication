@@ -19,7 +19,7 @@ module.exports.destroy=async (req,res)=>{
     Post.findById(req.params.id)
     .then((post)=>{
         if(post.user==req.user.id){
-            post.remove();
+            post.deleteOne();
             Comment.deleteMany({post:req.params.id})
             .catch((err)=>{
                 console.log(err);
